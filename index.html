@@ -268,6 +268,14 @@
       margin: 20px 0;
     }
 
+    .figure{
+  display: flex;
+  flex-direction: column;
+  align-items: center;   /* centra la imagen */
+  text-align: center;    /* centra el caption */
+  gap: 10px;
+}
+
     /* Anclas no queden pegadas arriba al hacer scroll */
     section{ scroll-margin-top: 18px; }
   </style>
@@ -396,7 +404,7 @@
 
           <div class="figure" role="group" aria-label="Figura 1">
               <img src="asset/diaDat.png" 
-                   alt="Figura 1 - Estructura en capas Clean Architecture EDI 301"
+                   alt="Figura 1 - HVU"
                    style="width:60%; height:auto; border-radius:12px;">
               <div class="figcap">
                 <strong>Figura 1.</strong> Diagrama de bloques sobre la relacion entre componente.
