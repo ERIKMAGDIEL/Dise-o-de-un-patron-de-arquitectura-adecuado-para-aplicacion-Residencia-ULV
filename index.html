@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diseño de un patrón de arquitectura adecuado para aplicación "Residencia ULV"</title>
+
+  <style>
+    :root{
+      --bg: #0b0f14;
+      --panel: #101823;
+      --panel-2: #0f1722;
+      --text: #eaf0f6;
+      --muted: #b7c3cf;
+      --line: rgba(255,255,255,.10);
+      --accent: #7aa2f7;
+      --accent-2: #a6e3a1;
+      --code-bg: #0b1220;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 14px;
+      --max: 980px;
+    }
+
+    *{ box-sizing: border-box; }
+
+    body{
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, Helvetica, sans-serif;
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(122,162,247,.18), transparent 60%),
+                  radial-gradient(1000px 600px at 90% 0%, rgba(166,227,161,.12), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    /* Layout centrado */
+    .wrap{
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 28px 18px 60px;
+    }
+
+    /* Tarjeta principal */
+    .card{
+      background: linear-gradient(180deg, rgba(16,24,35,.92), rgba(15,23,34,.92));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    /* PORTADA */
+    .title-page{
+      min-height: 100vh;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 0 80px;
+      border-bottom: 1px solid var(--line);
+      background:
+        radial-gradient(900px 260px at 30% 0%, rgba(122,162,247,.14), transparent 60%),
+        radial-gradient(900px 260px at 80% 0%, rgba(166,227,161,.10), transparent 60%);
+    }
+
+    .title-content{
+      text-align: right;
+    }
+
+    .app-title{
+      font-size: 1.45rem;
+      margin: 0 0 10px 0;
+      line-height: 1.25;
+      letter-spacing: .2px;
+    }
+
+    .authors{
+      margin: 6px 0;
+      font-size: 1.05rem;
+      color: rgba(234,240,246,.92);
+    }
+
+    .inst{
+      margin: 6px 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .email{
+      margin: 6px 0 0 0;
+      color: var(--muted);
+      font-size: .98rem;
+    }
+
+    /* Encabezado */
+    header{
+      padding: 26px 26px 18px;
+      border-bottom: 1px solid var(--line);
+      background:
+        radial-gradient(800px 220px at 30% 0%, rgba(122,162,247,.18), transparent 60%),
+        radial-gradient(800px 220px at 80% 0%, rgba(166,227,161,.10), transparent 60%);
+    }
+
+    .meta{
+      margin: 0;
+      color: var(--muted);
+      font-size: .98rem;
+    }
+
+    .meta strong{
+      color: var(--text);
+      font-weight: 650;
+    }
+
+    /* Contenido */
+    main{
+      padding: 22px 26px 26px;
+    }
+
+    h2{
+      margin: 26px 0 10px;
+      font-size: 1.25rem;
+      letter-spacing: .2px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    h3{
+      margin: 18px 0 8px;
+      font-size: 1.05rem;
+      color: var(--text);
+    }
+
+    p{
+      margin: 10px 0;
+      color: rgba(234,240,246,.92);
+    }
+
+    /* Índice profesional */
+    .toc{
+      margin: 18px 0 10px;
+      padding: 16px 16px 14px;
+      background: rgba(0,0,0,.18);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .toc-title{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 10px;
+      font-weight: 750;
+      letter-spacing: .2px;
+    }
+
+    .toc-badge{
+      font-size: .78rem;
+      color: rgba(234,240,246,.9);
+      background: rgba(122,162,247,.15);
+      border: 1px solid rgba(122,162,247,.35);
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+
+    .toc ol{
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .toc li{
+      margin: 6px 0;
+      color: var(--muted);
+    }
+
+    .toc a{
+      color: var(--text);
+      text-decoration: none;
+      border-bottom: 1px dashed rgba(234,240,246,.35);
+    }
+
+    .toc a:hover{
+      color: var(--accent);
+      border-bottom-color: rgba(122,162,247,.7);
+    }
+
+    /* Listas */
+    ul{
+      margin: 8px 0 12px;
+      padding-left: 18px;
+    }
+    li{
+      margin: 6px 0;
+      color: rgba(234,240,246,.9);
+    }
+
+    /* Bloques “títulos en negrita” */
+    .boldline{
+      font-weight: 800;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      color: rgba(234,240,246,.95);
+    }
+
+    /* Código */
+    pre{
+      margin: 12px 0 14px;
+      padding: 14px;
+      background: linear-gradient(180deg, rgba(11,18,32,.92), rgba(11,18,32,.78));
+      border: 1px solid rgba(122,162,247,.25);
+      border-radius: 12px;
+      overflow-x: auto;
+      box-shadow: 0 10px 22px rgba(0,0,0,.22);
+    }
+    code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      font-size: .95rem;
+      color: #e7efff;
+      white-space: pre;
+    }
+
+    /* Figuras */
+    figure{
+      margin: 14px 0 18px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(0,0,0,.14);
+    }
+    figcaption{
+      color: var(--muted);
+      font-size: .95rem;
+      margin-top: 8px;
+    }
+    .imgph{
+      width: 100%;
+      height: 220px;
+      border-radius: 10px;
+      border: 1px dashed rgba(255,255,255,.20);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(234,240,246,.75);
+      background: rgba(0,0,0,.12);
+    }
+
+    /* Bloques tipo descripción (description list) */
+    dl{
+      margin: 10px 0 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(0,0,0,.14);
+    }
+    dt{
+      font-weight: 800;
+      margin-top: 8px;
+      color: rgba(234,240,246,.95);
+    }
+    dd{
+      margin: 6px 0 10px 0;
+      color: rgba(234,240,246,.92);
+    }
+
+    /* Separador suave */
+    .divider{
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent);
+      margin: 20px 0;
+    }
+
+    /* Anclas no queden pegadas arriba al hacer scroll */
+    section{ scroll-margin-top: 18px; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+
+      <!-- PORTADA -->
+      <section class="title-page">
+        <div class="title-content">
+          <h2 class="app-title">Diseño de un patrón de arquitectura adecuado para aplicación "Residencia ULV"</h2>
+          <p class="authors"><strong>Duilio Emiliano Ortega Cardona y Erik Magdiel Pérez García</strong></p>
+          <p class="inst">Universidad Linda Vista, Ex-Finca Santa Cruz No. 1, 29750, México</p>
+          <p class="email">emiliano.ortega, erik.perez @ulv.edu.mx</p>
+        </div>
+      </section>
+
+      <header>
+        <p class="meta"><strong>Residencia ULV</strong></p>
+      </header>
+
+      <main>
+        <!-- Índice (profesional) -->
+        <nav class="toc" aria-label="Índice del documento">
+          <div class="toc-title">
+            Índice <span class="toc-badge">TABLE OF CONTENTS</span>
+          </div>
+          <ol>
+            <li><a href="#introduccion">Introducción</a></li>
+            <li><a href="#objetivo-del-proyecto">Objetivo del Proyecto</a></li>
+            <li><a href="#seleccion-del-patron-de-arquitectura">Selección del Patrón de Arquitectura</a></li>
+            <li>
+              <a href="#diseno-del-patron">Diseño del Patrón</a>
+              <ol>
+                <li><a href="#descripcion-de-los-componentes-clean-architecture">Descripción de los Componentes (Clean Architecture)</a></li>
+                <li><a href="#manejo-de-la-logica-de-negocio-y-estado">Manejo de la Lógica de Negocio y Estado</a></li>
+                <li><a href="#relaciones-entre-componentes">Relaciones entre Componentes</a></li>
+              </ol>
+            </li>
+            <li>
+              <a href="#implementacion-del-patron-en-el-proyecto">Implementación del Patrón en el Proyecto</a>
+              <ol>
+                <li><a href="#estructura-de-codigo-y-ejemplo">Estructura de Código y Ejemplo</a></li>
+                <li><a href="#ejemplo-de-implementacion-autenticacion">Ejemplo de Implementación (Autenticación)</a></li>
+              </ol>
+            </li>
+            <li>
+              <a href="#ventajas-y-desventajas">Ventajas y Desventajas</a>
+              <ol>
+                <li><a href="#ventajas">Ventajas</a></li>
+                <li><a href="#desventajas-y-retos">Desventajas y Retos</a></li>
+              </ol>
+            </li>
+            <li><a href="#conclusion">Conclusión</a></li>
+            <li><a href="#referencias">Referencias</a></li>
+          </ol>
+        </nav>
+
+        <!-- ============================================ -->
+        <!--                 INTRODUCCIÓN                 -->
+        <!-- ============================================ -->
+        <section id="introduccion">
+          <h2>Introducción</h2>
+          <p>
+            En el desarrollo de software moderno, y específicamente en la construcción de aplicaciones móviles escalables, la elección de un patrón de arquitectura adecuado es una decisión crítica que determina la viabilidad técnica del proyecto a largo plazo. Para evitar problemas comunes como la rigidez del código o la dificultad de mantenimiento, es fundamental implementar una estructura que desacople la lógica de negocio de la interfaz de usuario. En este documento se presenta el Diseño de un patrón de arquitectura  para el proyecto "Hogar ULV", utilizando. La elección de la arquitectura responde a la necesidad de crear un sistema robusto, modular y fácilmente testable, capaz de adaptarse a los cambios constantes en los requerimientos del entorno universitario.
+          </p>
+        </section>
+
+        <section id="objetivo-del-proyecto">
+          <h2>Objetivo del Proyecto</h2>
+          <p>
+            El objetivo de este trabajo es definir y justificar la arquitectura de software para la aplicación móvil "Hogar ULV". Este proyecto consiste en una solución de una aplicación movil (Android/iOS) diseñada para la gestión integral de los dormitorios universitarios. La aplicación permite a los estudiantes visualizar su perfil, gestionar permisos de salida y registrar asistencias, mientras que faculta a los preceptores y monitores para administrar a los residentes y supervisar la operatividad del internado. El diseño arquitectónico propuesto busca garantizar que la comunicación entre la aplicación móvil y el backend (API REST) sea eficiente, segura y escalable, facilitando la incorporación futura de nuevos módulos sin comprometer la estabilidad del sistema existente.
+          </p>
+        </section>
+
+        <section id="seleccion-del-patron-de-arquitectura">
+          <h2>Selección del Patrón de Arquitectura</h2>
+          <p>
+            Para el desarrollo del proyecto "Hogar ULV", se ha seleccionado el patrón de Clean Architecture (Arquitectura Limpia), integrando el patrón Repository para la abstracción de datos y Provider para la gestión eficiente del estado en Flutter. Esta elección estratégica responde a la necesidad de desacoplar completamente la lógica de negocio de la interfaz de usuario, lo cual es crucial en una aplicación que interactúa constantemente con una API externa y maneja múltiples roles de usuario (estudiantes, monitores y preceptores); al aislar las reglas de negocio en capas independientes, aseguramos no solo una mayor escalabilidad y facilidad de mantenimiento ante futuros cambios, sino también la testabilidad del código, permitiendo que la evolución de la interfaz gráfica no comprometa la estabilidad de las funcionalidades críticas del sistema.
+          </p>
+        </section>
+
+        <section id="diseno-del-patron">
+          <h2>Diseño del Patrón</h2>
+
+          <section id="descripcion-de-los-componentes-clean-architecture">
+            <h3>Descripción de los Componentes (Clean Architecture)</h3>
+            <p>El diseño se divide en tres capas concéntricas que respetan la Regla de Dependencia: las capas internas no conocen nada de las externas.</p>
+
+            <h3>A. Capa de Presentación (Presentation Layer)</h3>
+            <p>Es la capa visible para el usuario.</p>
+            <ul>
+              <li><strong>Widgets/Pages:</strong> Las pantallas (ej. <code>LoginScreen</code>, <code>DashboardPreceptor</code>). Solo se encargan de pintar la UI.</li>
+              <li><strong>State Management (Providers):</strong> Actúan como intermediarios. Reciben eventos del usuario (ej. ``click en login''), llaman a la capa de dominio y actualizan la UI con el nuevo estado (ej. ``Cargando'', ``Error'', ``Éxito'').</li>
+            </ul>
+
+            <h3>B. Capa de Dominio (Domain Layer) - El núcleo</h3>
+            <p>Es la capa más interna y no depende de ninguna librería externa (ni de Flutter, ni de HTTP).</p>
+            <ul>
+              <li><strong>Entities:</strong> Modelos de datos puros (ej. <code>Estudiantes</code>, <code>Preceptor</code>).</li>
+              <li><strong>Repositories (Interfaces):</strong> Contratos abstractos que definen <em>qué</em> se puede hacer, pero no <em>cómo</em> (ej. <code>abstract class AuthRepository { Future&lt;User&gt; login(String id, String pass); }</code>).</li>
+              <li><strong>Use Cases (Casos de Uso):</strong> Acciones específicas que un usuario puede realizar (ej. <code>LoginUser</code>, <code>GetStudentProfile</code>).</li>
+            </ul>
+
+            <h3>C. Capa de Datos (Data Layer)</h3>
+            <p>Es la capa encargada de la comunicación con el mundo exterior (APIs y Bases de Datos).</p>
+            <ul>
+              <li><strong>Repositories (Implementations):</strong> La implementación real de las interfaces del dominio (ej. <code>AuthRepositoryImpl</code>). Aquí se decide si se buscan los datos en la API o en la base de datos local.</li>
+              <li><strong>Data Sources:</strong> Conexiones directas a fuentes de datos (ej. <code>ApiService</code> usando <code>http</code>).</li>
+              <li><strong>Models/DTOs:</strong> Modelos que saben convertir JSON a objetos (ej. <code>UserModel.fromJson</code>).</li>
+            </ul>
+          </section>
+
+          <section id="manejo-de-la-logica-de-negocio-y-estado">
+            <h3>Manejo de la Lógica de Negocio y Estado</h3>
+            <p>
+              Para la gestión del estado en la aplicación Flutter, se utiliza el patrón <strong>Provider</strong> (específicamente <code>ChangeNotifier</code>). Esta herramienta permite separar la lógica de la interfaz gráfica de manera eficiente:
+            </p>
+            <ul>
+              <li><strong>Estado de UI:</strong> Los <code>Providers</code> mantienen variables reactivas (como <code>_isLoading</code>, <code>_errorMessage</code>, <code>_studentData</code>). Cuando estas variables cambian, notifican a los <em>widgets</em> que están escuchando  para que se reconstruyan automáticamente.</li>
+              <li><strong>Lógica de Negocio:</strong> La lógica ``pesada'' o reglas de negocio no residen en el Provider ni en la UI, sino en los <strong>Casos de Uso (Use Cases)</strong> de la capa de Dominio. El Provider simplemente invoca estos casos de uso. Por ejemplo, para registrar una asistencia, el Provider llama a <code>RegisterAttendanceUseCase</code>, y este último ejecuta la validación de reglas (ej. ``el alumno no puede registrar asistencia si está fuera del campus'').</li>
+            </ul>
+          </section>
+
+          <section id="relaciones-entre-componentes">
+            <h3>Relaciones entre Componentes</h3>
+            <figure>
+              <div class="imgph">diagramaDatos.png</div>
+              <figcaption>Diagrama de bloques sobre la relacion entre componente.</figcaption>
+            </figure>
+          </section>
+        </section>
+
+        <section id="implementacion-del-patron-en-el-proyecto">
+          <h2>Implementación del Patrón en el Proyecto</h2>
+
+          <section id="estructura-de-codigo-y-ejemplo">
+            <h3>Estructura de Código y Ejemplo</h3>
+            <p>
+              A continuación, describo cómo se organizara el código en Flutter siguiendo esta arquitectura. La estructura de directorios ha sido diseñada para aislar las dependencias y facilitar la escalabilidad:
+            </p>
+
+            <figure>
+              <pre><code>.1 lib/.
+.2 core/ # Utilidades compartidas (errores, constantes).
+.2 features/ # Módulos por funcionalidad.
+.3 auth/ # Módulo de Autenticación.
+.4 data/ # Capa de Datos.
+.5 datasources/.
+.5 models/.
+.5 repositories/.
+.4 domain/ # Capa de Dominio (Pura).
+.5 entities/.
+.5 repositories/.
+.4 presentation/ # Capa de UI.
+.5 providers/.
+.5 screens/.
+.2 main.dart.</code></pre>
+              <figcaption>Estructura de directorios del proyecto Hogar ULV basada en Clean Architecture.</figcaption>
+            </figure>
+          </section>
+
+          <section id="ejemplo-de-implementacion-autenticacion">
+            <h3>Ejemplo de Implementación (Autenticación)</h3>
+            <p>
+              A continuación, se detalla la implementación del flujo de inicio de sesión recorriendo las tres capas de la arquitectura propuesta:
+            </p>
+
+            <h3>1. Dominio (Contrato)</h3>
+            <p>
+              En esta capa definimos <em>qué</em> necesitamos (la interfaz) sin importarnos la implementación externa o la API. Es código puro de Dart.
+            </p>
+            <pre><code>abstract class AuthRepository {
+  // Contrato que obliga a implementar el login
+  Future&lt;User&gt; login(String matricula, String password);
+}</code></pre>
+
+            <h3>2. Datos (Implementación)</h3>
+            <p>
+              Aquí conectamos con la API real, realizamos la petición HTTP y transformamos el JSON en objetos de dominio.
+            </p>
+            <pre><code>class AuthRepositoryImpl implements AuthRepository {
+  final http.Client client;
+
+  AuthRepositoryImpl(this.client);
+
+  @override
+  Future&lt;User&gt; login(String matricula, String password) async {
+    final response = await client.post(
+      Uri.parse('${ApiConfig.baseUrl}/login'),
+      body: {'id': matricula, 'pass': password}
+    );
+
+    if (response.statusCode == 200) {
+      // Convertimos el JSON a una Entidad de Dominio
+      return UserModel.fromJson(jsonDecode(response.body));
+    } else {
+      throw ServerException();
+    }
+  }
+}</code></pre>
+
+            <h3>3. Presentación (Gestión de Estado)</h3>
+            <p>
+              Utilizamos <code>Provider</code> para manejar el estado de la UI. El Provider consume el caso de uso (o repositorio) y notifica a la vista cuando el estado cambia.
+            </p>
+            <pre><code>class AuthProvider extends ChangeNotifier {
+  final AuthRepository repository;
+  User? _usuario;
+  bool _isLoading = false;
+
+  AuthProvider({required this.repository});
+
+  // Getters para que la UI consuma el estado de forma segura
+  bool get isLoading =&gt; _isLoading;
+  User? get usuario =&gt; _usuario;
+
+  Future&lt;void&gt; login(String matricula, String password) async {
+    _isLoading = true;
+    notifyListeners(); // 1. Notifica a la UI para mostrar carga
+
+    try {
+      _usuario = await repository.login(matricula, password);
+    } catch (e) {
+      // Manejo de errores 
+    } finally {
+      _isLoading = false;
+      notifyListeners(); // 2. Notifica para quitar carga y navegar
+    }
+  }
+}</code></pre>
+          </section>
+        </section>
+
+        <section id="ventajas-y-desventajas">
+          <h2>Ventajas y Desventajas</h2>
+          <p>A continuación se presenta un análisis crítico sobre la adopción de Clean Architecture en el contexto del proyecto.</p>
+
+          <section id="ventajas">
+            <h3>Ventajas</h3>
+            <dl>
+              <dt>Independencia de Frameworks y BD:</dt>
+              <dd>La lógica de negocio (capa de Dominio) no sabe que existe Flutter ni SQL Server. Si en el futuro se decide cambiar la API REST por Firebase, solo se modifica la capa de <code>Data</code>, sin romper la <code>UI</code> ni el Dominio.</dd>
+
+              <dt>Testabilidad:</dt>
+              <dd>Es muy fácil realizar pruebas unitarias. Podemos probar la lógica del <code>AuthProvider</code> simulando (<em>mocking</em>) el repositorio, sin necesidad de tener acceso a internet o una conexión real a la base de datos.</dd>
+
+              <dt>Escalabilidad del Equipo:</dt>
+              <dd>Un desarrollador puede pulir la interfaz gráfica mientras otro optimiza las consultas a la API en paralelo, ya que los contratos (interfaces) están definidos desde el principio del desarrollo.</dd>
+            </dl>
+          </section>
+
+          <section id="desventajas-y-retos">
+            <h3>Desventajas y Retos</h3>
+            <dl>
+              <dt>Código repetitivo:</dt>
+              <dd>Clean Architecture requiere crear múltiples archivos (Interfaces, Implementaciones, Modelos, Entidades) incluso para funcionalidades simples. Esto puede parecer excesivo al inicio del proyecto comparado con arquitecturas monolíticas.</dd>
+
+              <dt>Curva de Aprendizaje:</dt>
+              <dd>Para nuevos desarrolladores que se unan al proyecto ``Hogar ULV'', entender la inyección de dependencias y la separación estricta de capas puede tomar más tiempo de adaptación en comparación con colocar toda la lógica dentro de los <em>Widgets</em>.</dd>
+            </dl>
+          </section>
+        </section>
+
+        <section id="conclusion">
+          <h2>Conclusión</h2>
+          <p>
+            La implementación de <em>Clean Architecture</em> combinada con el patrón <code>Provider</code> en el proyecto ``Hogar ULV'' proporciona una estructura robusta y profesional. Aunque la inversión inicial en tiempo de configuración es mayor que en una arquitectura simple, esta decisión garantiza que la aplicación sea sostenible y mantenible a largo plazo.
+          </p>
+          <p>
+            El patrón elegido no solo organiza eficientemente el código actual, sino que prepara el sistema para evolucionar. Por ejemplo, si en una futura versión se requiere que la aplicación funcione en modo <em>offline</em> (sin internet), sería posible implementar una base de datos local (como <code>SQLite</code>) en la capa de <code>Data</code> sin tener que modificar ni una sola línea de la lógica de negocio ni de las pantallas de la aplicación. Esto demuestra que la arquitectura elegida cumple con los más altos estándares de calidad de software y adaptabilidad.
+          </p>
+        </section>
+
+        <section id="referencias">
+          <h2>Referencias</h2>
+
+          <p>Martin, R.C.: Clean Architecture: A Craftsman's Guide to Software Structure and Design. Prentice Hall, Boston (2017).</p>
+          <p>Wijayanto, R.A., Sejati, R.H.P.: Implementing Flutter Clean Architecture for Mobile Tourism Application Development. International Journal of Computer Applications <strong>185</strong>(39), 23--30 (2023). <span style="color: var(--muted);">https://doi.org/10.5120/ijca2023923197</span></p>
+          <p>Bass, L., Clements, P., Kazman, R.: Software Architecture in Practice. 4th edn. Addison-Wesley Professional, Boston (2021).</p>
+          <p>Gamma, E., Helm, R., Johnson, R., Vlissides, J.: Design Patterns: Elements of Reusable Object-Oriented Software. Addison-Wesley, Reading (1994).</p>
+        </section>
+
+      </main>
+    </div>
+  </div>
+</body>
+</html>
